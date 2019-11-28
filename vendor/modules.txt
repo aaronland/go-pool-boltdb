@@ -1,0 +1,8 @@
+# github.com/aaronland/go-pool v0.0.0-20191128211702-88306299c758
+github.com/aaronland/go-pool
+# github.com/aaronland/go-roster v0.0.1
+github.com/aaronland/go-roster
+# github.com/boltdb/bolt v1.3.1
+github.com/boltdb/bolt
+# golang.org/x/sys v0.0.0-20190516110030-61b9204099cb
+golang.org/x/sys/unix
