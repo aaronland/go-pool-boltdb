@@ -40,17 +40,17 @@ func (pl *BoltDBPool) Open(ctx context.Context, uri string) error {
 		return err
 	}
 
-	q := u.Query()
-
-	dsn := q.Get("dsn")
-	bucket := q.Get("bucket")
-
-	if dsn == "" {
-		return errors.New("Missing dsn")
-	}
+	bucket := u.Host
 
 	if bucket == "" {
 		return errors.New("Missing bucket")
+	}
+	
+	q := u.Query()
+	dsn := q.Get("dsn")
+
+	if dsn == "" {
+		return errors.New("Missing dsn")
 	}
 
 	deflate := func(i pool.Item) (interface{}, error) {
