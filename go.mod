@@ -1,4 +1,4 @@
-module github.com/whosonfirst/go-whosonfirst-pool-boltdb
+module github.com/aaronland/go-pool-boltdb
 
 require (
 	github.com/aaronland/go-pool v0.0.0-20191128211702-88306299c758
