@@ -2,17 +2,17 @@ package boltdb
 
 import (
 	"context"
-	"errors"
-	"github.com/aaronland/go-pool"
-	"github.com/boltdb/bolt"
+	"fmt"
 	"net/url"
 	"strconv"
+
+	"github.com/aaronland/go-pool/v2"
+	"github.com/boltdb/bolt"
 )
 
 func init() {
 	ctx := context.Background()
-	pl := NewBoltDBPool()
-	pool.Register(ctx, "boltdb", pl)
+	pool.RegisterPool(ctx, "boltdb", NewBoltDBPool)
 }
 
 type DeflateFunc func(pool.Item) (interface{}, error)
@@ -27,30 +27,25 @@ type BoltDBPool struct {
 	deflate DeflateFunc
 }
 
-func NewBoltDBPool() pool.Pool {
-	pl := &BoltDBPool{}
-	return pl
-}
-
-func (pl *BoltDBPool) Open(ctx context.Context, uri string) error {
+func NewBoltDBPool(ctx context.Context, uri string) (pool.Pool, error) {
 
 	u, err := url.Parse(uri)
 
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("Failed to parse URI, %w", err)
 	}
 
 	bucket := u.Host
 
 	if bucket == "" {
-		return errors.New("Missing bucket")
+		return nil, fmt.Errorf("Missing bucket")
 	}
-	
+
 	q := u.Query()
 	dsn := q.Get("dsn")
 
 	if dsn == "" {
-		return errors.New("Missing dsn")
+		return nil, fmt.Errorf("Missing dsn")
 	}
 
 	deflate := func(i pool.Item) (interface{}, error) {
@@ -64,7 +59,7 @@ func (pl *BoltDBPool) Open(ctx context.Context, uri string) error {
 		int, err := strconv.ParseInt(string(b_int), 10, 64)
 
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Failed to parse pool item '%s', %w", string(b_int), err)
 		}
 
 		return pool.NewIntItem(int), nil
@@ -73,13 +68,13 @@ func (pl *BoltDBPool) Open(ctx context.Context, uri string) error {
 	db, err := bolt.Open(dsn, 0600, nil)
 
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("Failed to open database, %w", err)
 	}
 
 	tx, err := db.Begin(true)
 
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("Failed to start transaction, %w", err)
 	}
 
 	defer tx.Rollback()
@@ -87,28 +82,26 @@ func (pl *BoltDBPool) Open(ctx context.Context, uri string) error {
 	_, err = tx.CreateBucketIfNotExists([]byte(bucket))
 
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("Failed to create bucket, %w", err)
 	}
 
 	err = tx.Commit()
 
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("Failed to commit transaction, %w", err)
 	}
 
-	pl.db = db
-	pl.bucket = bucket
-	pl.inflate = inflate
-	pl.deflate = deflate
+	pl := &BoltDBPool{
+		db:      db,
+		bucket:  bucket,
+		inflate: inflate,
+		deflate: deflate,
+	}
 
-	return nil
+	return pl, nil
 }
 
-// basically the interface for pool.LIFOPool should be changed
-// to expect errors all over the place but today that is not
-// the case... (20181222/thisisaaronland)
-
-func (pl *BoltDBPool) Length() int64 {
+func (pl *BoltDBPool) Length(ctx context.Context) int64 {
 
 	count := int64(0)
 
@@ -128,9 +121,9 @@ func (pl *BoltDBPool) Length() int64 {
 	return count
 }
 
-func (pl *BoltDBPool) Push(pi pool.Item) {
+func (pl *BoltDBPool) Push(ctx context.Context, i any) error {
 
-	pl.db.Update(func(tx *bolt.Tx) error {
+	err := pl.db.Update(func(tx *bolt.Tx) error {
 
 		b := tx.Bucket([]byte(pl.bucket))
 
@@ -151,9 +144,11 @@ func (pl *BoltDBPool) Push(pi pool.Item) {
 
 		return b.Put([]byte(k), []byte(v))
 	})
+
+	return err
 }
 
-func (pl *BoltDBPool) Pop() (pool.Item, bool) {
+func (pl *BoltDBPool) Pop(ctx context.Context) (any, bool) {
 
 	var pi pool.Item
 
