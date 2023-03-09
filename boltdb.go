@@ -2,6 +2,7 @@ package boltdb
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -10,14 +11,16 @@ import (
 	"github.com/boltdb/bolt"
 )
 
+const BOLTDB_SCHEME string = "boltdb"
+
 func init() {
 	ctx := context.Background()
-	pool.RegisterPool(ctx, "boltdb", NewBoltDBPool)
+	pool.RegisterPool(ctx, BOLTDB_SCHEME, NewBoltDBPool)
 }
 
-type DeflateFunc func(pool.Item) (interface{}, error)
+type DeflateFunc func(any) (any, error)
 
-type InflateFunc func(interface{}) (pool.Item, error)
+type InflateFunc func(any) (any, error)
 
 type BoltDBPool struct {
 	pool.Pool
@@ -48,21 +51,12 @@ func NewBoltDBPool(ctx context.Context, uri string) (pool.Pool, error) {
 		return nil, fmt.Errorf("Missing dsn")
 	}
 
-	deflate := func(i pool.Item) (interface{}, error) {
-		return i.String(), nil
+	deflate := func(i any) (any, error) {
+		return i, nil
 	}
 
-	inflate := func(rsp interface{}) (pool.Item, error) {
-
-		b_int := rsp.([]byte)
-
-		int, err := strconv.ParseInt(string(b_int), 10, 64)
-
-		if err != nil {
-			return nil, fmt.Errorf("Failed to parse pool item '%s', %w", string(b_int), err)
-		}
-
-		return pool.NewIntItem(int), nil
+	inflate := func(i any) (any, error) {
+		return i, nil
 	}
 
 	db, err := bolt.Open(dsn, 0600, nil)
@@ -127,12 +121,6 @@ func (pl *BoltDBPool) Push(ctx context.Context, i any) error {
 
 		b := tx.Bucket([]byte(pl.bucket))
 
-		i, err := pl.deflate(pi)
-
-		if err != nil {
-			return err
-		}
-
 		id, err := b.NextSequence()
 
 		if err != nil {
@@ -140,9 +128,14 @@ func (pl *BoltDBPool) Push(ctx context.Context, i any) error {
 		}
 
 		k := strconv.FormatInt(int64(id), 10)
-		v := i.(string)
 
-		return b.Put([]byte(k), []byte(v))
+		v, err := json.Marshal(i)
+
+		if err != nil {
+			return fmt.Errorf("Failed to marshal data, %w", err)
+		}
+
+		return b.Put([]byte(k), v)
 	})
 
 	return err
@@ -150,7 +143,7 @@ func (pl *BoltDBPool) Push(ctx context.Context, i any) error {
 
 func (pl *BoltDBPool) Pop(ctx context.Context) (any, bool) {
 
-	var pi pool.Item
+	var i any
 
 	err := pl.db.Update(func(tx *bolt.Tx) error {
 
@@ -159,19 +152,18 @@ func (pl *BoltDBPool) Pop(ctx context.Context) (any, bool) {
 
 		k, v := c.First()
 
-		p, err := pl.inflate(v)
+		err := json.Unmarshal(v, &i)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Failed to unmarshal datam %w", err)
 		}
 
 		err = b.Delete(k)
 
 		if err != nil {
-			return err
+			return fmt.Errorf("Failed to delete key, %w", err)
 		}
 
-		pi = p
 		return nil
 	})
 
@@ -179,5 +171,5 @@ func (pl *BoltDBPool) Pop(ctx context.Context) (any, bool) {
 		return nil, false
 	}
 
-	return pi, true
+	return i, true
 }
