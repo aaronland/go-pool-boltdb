@@ -18,16 +18,10 @@ func init() {
 	pool.RegisterPool(ctx, BOLTDB_SCHEME, NewBoltDBPool)
 }
 
-type DeflateFunc func(any) (any, error)
-
-type InflateFunc func(any) (any, error)
-
 type BoltDBPool struct {
 	pool.Pool
-	db      *bolt.DB
-	bucket  string
-	inflate InflateFunc
-	deflate DeflateFunc
+	db     *bolt.DB
+	bucket string
 }
 
 func NewBoltDBPool(ctx context.Context, uri string) (pool.Pool, error) {
@@ -49,14 +43,6 @@ func NewBoltDBPool(ctx context.Context, uri string) (pool.Pool, error) {
 
 	if dsn == "" {
 		return nil, fmt.Errorf("Missing dsn")
-	}
-
-	deflate := func(i any) (any, error) {
-		return i, nil
-	}
-
-	inflate := func(i any) (any, error) {
-		return i, nil
 	}
 
 	db, err := bolt.Open(dsn, 0600, nil)
@@ -86,10 +72,8 @@ func NewBoltDBPool(ctx context.Context, uri string) (pool.Pool, error) {
 	}
 
 	pl := &BoltDBPool{
-		db:      db,
-		bucket:  bucket,
-		inflate: inflate,
-		deflate: deflate,
+		db:     db,
+		bucket: bucket,
 	}
 
 	return pl, nil
@@ -150,7 +134,7 @@ func (pl *BoltDBPool) Pop(ctx context.Context) (any, bool) {
 		b := tx.Bucket([]byte(pl.bucket))
 		c := b.Cursor()
 
-		k, v := c.First()
+		k, v := c.Last()
 
 		err := json.Unmarshal(v, &i)
 

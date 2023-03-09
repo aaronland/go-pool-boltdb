@@ -27,7 +27,7 @@ func TestMemoryPool(t *testing.T) {
 		t.Fatalf("Failed to close temp file, %v", err)
 	}
 
-	uri := fmt.Sprintf("%s://%s", BOLTDB_SCHEME, f.Name())
+	uri := fmt.Sprintf("%s://test?dsn=%s", BOLTDB_SCHEME, f.Name())
 
 	pl, err := pool.NewPool(ctx, uri)
 
