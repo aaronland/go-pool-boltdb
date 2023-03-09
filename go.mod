@@ -1,10 +1,13 @@
-module github.com/aaronland/go-pool-boltdb
+module github.com/aaronland/go-pool-boltdb/v2
+
+go 1.18
 
 require (
-	github.com/aaronland/go-pool v0.0.0-20191128211702-88306299c758
+	github.com/aaronland/go-pool/v2 v2.0.0
 	github.com/boltdb/bolt v1.3.1
-	github.com/whosonfirst/go-whosonfirst-pool v0.1.0 // indirect
-	golang.org/x/sys v0.0.0-20190516110030-61b9204099cb // indirect
 )
 
-go 1.12
+require (
+	github.com/aaronland/go-roster v1.0.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+)

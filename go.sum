@@ -1,10 +1,8 @@
-github.com/aaronland/go-pool v0.0.0-20191128211702-88306299c758 h1:m/JUyvxsCbgOyhecvs9WXFvZy9dj8BKu4T96J53d/ao=
-github.com/aaronland/go-pool v0.0.0-20191128211702-88306299c758/go.mod h1:hL9EPOZJ6WVHaz7D0Jw1Dn1vaCOOSZNrYBTKMgDKYRk=
-github.com/aaronland/go-roster v0.0.1 h1:r1l4n1HfWvEtOXZvhfXX0Won9Xf6QJsigdUdzOtuy/M=
-github.com/aaronland/go-roster v0.0.1/go.mod h1:AcovpxlG1XxJxX2Fjqlm63fEIBhCjEIBV4lP87FZDmI=
+github.com/aaronland/go-pool/v2 v2.0.0 h1:3nYPErb875nXxrEGKhSNFqxR7rt9bMmeusbU8RuEksg=
+github.com/aaronland/go-pool/v2 v2.0.0/go.mod h1:2Yx7B3wLvg4qjxMDvDRseob7p0pgf/btsLfZ3NnIDlg=
+github.com/aaronland/go-roster v1.0.0 h1:FRDGrTqsYySKjWnAhbBGXyeGlI/o5/t9FZYCbUmyQtI=
+github.com/aaronland/go-roster v1.0.0/go.mod h1:KIsYZgrJlAsyb9LsXSCvlqvbcCBVjCSqcQiZx42i9ro=
 github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
-github.com/whosonfirst/go-whosonfirst-pool v0.1.0 h1:pwbGycsy/UqK6DJ29tTwnl6wnYYfcaJmsGD+If8un6E=
-github.com/whosonfirst/go-whosonfirst-pool v0.1.0/go.mod h1:6LeQYv7hVK16LVevMuOuaLRfgI3JDtaoVxaMMVqRS38=
-golang.org/x/sys v0.0.0-20190516110030-61b9204099cb h1:k07iPOt0d6nEnwXF+kHB+iEg+WSuKe/SOQuFM2QoD+E=
-golang.org/x/sys v0.0.0-20190516110030-61b9204099cb/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.6.0 h1:MVltZSvRTcU2ljQOhs94SXPftV6DCNnZViHeQps87pQ=
+golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
